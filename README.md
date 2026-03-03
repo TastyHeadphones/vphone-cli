@@ -1,4 +1,4 @@
-<div align="right"><strong><a href="./README_zh.md">🇨🇳中文</a></strong> | <strong>🇬🇧English</strong></div>
+<div align="right"><strong><a href="./README_ja.md">🇯🇵日本語</a></strong> | <strong><a href="./README_zh.md">🇨🇳中文</a></strong> | <strong>🇬🇧English</strong></div>
 
 # vphone-cli
 
@@ -36,7 +36,7 @@ Restart once more.
 **Install dependencies:**
 
 ```bash
-brew install gnu-tar openssl@3 ldid-procursus sshpass keystone autoconf automake pkg-config libtool git-lfs
+brew install wget gnu-tar openssl@3 ldid-procursus sshpass keystone autoconf automake pkg-config libtool git-lfs
 ```
 
 **Git LFS** — this repo uses Git LFS for large resource archives. Install and pull before building:
