@@ -39,6 +39,7 @@ SSH_PORT=2222
 SSH_PASS="alpine"
 SSH_USER="root"
 SSH_HOST="localhost"
+SSH_RETRY=3
 SSHPASS_BIN=""
 SSH_OPTS=(
   -o StrictHostKeyChecking=no
@@ -69,15 +70,39 @@ _sshpass() {
 }
 
 ssh_cmd() {
-  _sshpass ssh "${SSH_OPTS[@]}" -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" "$@"
+  local attempt
+  for attempt in $(seq 1 $SSH_RETRY); do
+    _sshpass ssh "${SSH_OPTS[@]}" -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" "$@" && return 0
+    local rc=$?
+    [[ $rc -ne 255 ]] && return $rc   # real command failure — don't retry
+    echo "  [ssh] connection lost (attempt $attempt/$SSH_RETRY), retrying in 3s..." >&2
+    sleep 3
+  done
+  return 255
 }
 
 scp_to() {
-  _sshpass scp -q "${SSH_OPTS[@]}" -P "$SSH_PORT" -r "$1" "$SSH_USER@$SSH_HOST:$2"
+  local attempt
+  for attempt in $(seq 1 $SSH_RETRY); do
+    _sshpass scp -q "${SSH_OPTS[@]}" -P "$SSH_PORT" -r "$1" "$SSH_USER@$SSH_HOST:$2" && return 0
+    local rc=$?
+    [[ $rc -ne 255 ]] && return $rc
+    echo "  [scp] connection lost (attempt $attempt/$SSH_RETRY), retrying in 3s..." >&2
+    sleep 3
+  done
+  return 255
 }
 
 scp_from() {
-  _sshpass scp -q "${SSH_OPTS[@]}" -P "$SSH_PORT" "$SSH_USER@$SSH_HOST:$1" "$2"
+  local attempt
+  for attempt in $(seq 1 $SSH_RETRY); do
+    _sshpass scp -q "${SSH_OPTS[@]}" -P "$SSH_PORT" "$SSH_USER@$SSH_HOST:$1" "$2" && return 0
+    local rc=$?
+    [[ $rc -ne 255 ]] && return $rc
+    echo "  [scp] connection lost (attempt $attempt/$SSH_RETRY), retrying in 3s..." >&2
+    sleep 3
+  done
+  return 255
 }
 
 remote_file_exists() {
